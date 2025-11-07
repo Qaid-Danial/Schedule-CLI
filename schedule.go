@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/rivo/tview"
 )
@@ -42,6 +43,15 @@ func addSubject() {
 	os.WriteFile(subjectDB, data, 0644)
 }
 
+func delSubject(index int) {
+	if index < 0 || index > len(classes) {
+		fmt.Printf("Invalid Data")
+		return
+	}
+	classes = append(classes[:index], classes[index+1:]...)
+	addSubject()
+}
+
 func main() {
 	app := tview.NewApplication()
 
@@ -71,9 +81,11 @@ func main() {
 	// subjectSectionInput
 	// subjectTimeInput
 	// subjectLocationInput
+	classToDelete := tview.NewInputField().SetLabel("Class Number: ")
 
 	classForm.AddFormItem(classNameInput).
 		AddFormItem(classCodeInput).
+		AddFormItem(classToDelete).
 		AddButton("Register Class", func() {
 			name := classNameInput.GetText()
 			code := classCodeInput.GetText()
@@ -86,6 +98,16 @@ func main() {
 				classCodeInput.SetText("")
 				app.SetFocus(classForm)
 			}
+		}).
+		AddButton("Delete", func() {
+			index, err := strconv.Atoi(classToDelete.GetText())
+			if err != nil {
+				fmt.Println("Error while deleting -", err)
+			}
+			delSubject(index - 1)
+			refreshSubject()
+			classToDelete.SetText("")
+			app.SetFocus(classForm)
 		})
 
 	flex := tview.NewFlex().
